@@ -1,0 +1,29 @@
+# heardhere.uk — Cloudflare Workers configuration
+# Deploy with: wrangler deploy
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "heardhere-ingest"
+main = "workers/ingest/index.js"
+compatibility_date = "2025-01-01"
+
+# D1 database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "heardhere-db"
+database_id = "REPLACE_WITH_YOUR_D1_ID"
+
+# KV namespace for unit API key hashes
+[[kv_namespaces]]
+binding = "UNIT_KEYS"
+id = "REPLACE_WITH_YOUR_KV_ID"
+
+# R2 bucket for audio clips
+[[r2_buckets]]
+binding = "AUDIO"
+bucket_name = "heardhere-audio"
+
+# Routes — subdomain per worker
+[env.production]
+routes = [
+  { pattern = "ingest.heardhere.uk/*", zone_name = "heardhere.uk" }
+]
