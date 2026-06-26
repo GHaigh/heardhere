@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>heardhere — nature listening station</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --hh-bg: #0d1a0d;
+  --hh-surface: #142014;
+  --hh-card: #1a2e1a;
+  --hh-border: rgba(100,160,100,0.15);
+  --hh-green: #5a9e6f;
+  --hh-green-bright: #7bc67e;
+  --hh-green-pale: #c8e6c9;
+  --hh-muted: #5a7a5a;
+  --hh-text: #d4e8d4;
+  --hh-text-dim: #8aaa8a;
+  --hh-bat: #9b7fcf;
+  --hh-bat-pale: #d4c4f0;
+  --hh-amber: #c8960a;
+  --font-serif: 'Lora', Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--hh-bg);
+  color: var(--hh-text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 48px;
+  border-bottom: 0.5px solid var(--hh-border);
+  position: sticky;
+  top: 0;
+  background: rgba(13,26,13,0.95);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.nav-logo { font-size: 13px; font-weight: 500; color: var(--hh-green-bright); letter-spacing: 0.5px; }
+.nav-links { display: flex; gap: 20px; list-style: none; }
+.nav-links a { color: var(--hh-muted); text-decoration: none; font-size: 13px; transition: color 0.15s; }
+.nav-links a:hover, .nav-links a.active { color: var(--hh-green-bright); }
+.nav-live { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--hh-muted); }
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--hh-green-bright);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+.site-header {
+  padding: 40px 24px 32px;
+  border-bottom: 0.5px solid var(--hh-border);
+  position: relative;
+  overflow: hidden;
+}
+.site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 100% at 80% 50%, rgba(90,158,111,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.header-eyebrow { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--hh-green); margin-bottom: 8px; }
+.site-name { font-size: 32px; font-weight: 400; font-family: var(--font-serif); color: var(--hh-green-pale); line-height: 1.2; margin-bottom: 10px; }
+.site-meta { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.w3w-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--hh-muted);
+  background: rgba(90,158,111,0.08);
+  border: 0.5px solid var(--hh-border);
+  border-radius: 6px; padding: 4px 10px;
+}
+.w3w-badge span { color: var(--hh-green-bright); }
+.header-stats { display: flex; gap: 24px; }
+.hstat { text-align: left; }
+.hstat-val { font-size: 22px; font-weight: 500; color: var(--hh-green-pale); line-height: 1; }
+.hstat-val.bat { color: var(--hh-bat-pale); }
+.hstat-label { font-size: 11px; color: var(--hh-muted); margin-top: 3px; }
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  min-height: calc(100vh - 200px);
+}
+.main-col { padding: 24px 24px 24px 0; border-right: 0.5px solid var(--hh-border); }
+.section-label {
+  font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--hh-muted); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content: ''; flex: 1; height: 0.5px; background: var(--hh-border); }
+.detection-feed { display: flex; flex-direction: column; gap: 2px; }
+.detection-row {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  gap: 12px; padding: 10px 12px;
+  border-radius: 8px;
+  border: 0.5px solid transparent;
+  transition: background 0.1s, border-color 0.1s;
+}
+.detection-row:hover { background: var(--hh-card); border-color: var(--hh-border); }
+.conf-ring {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500; flex-shrink: 0;
+}
+.conf-ring.bird {
+  background: rgba(90,158,111,0.15); color: var(--hh-green-bright);
+  border: 1.5px solid rgba(90,158,111,0.3);
+}
+.conf-ring.bat {
+  background: rgba(155,127,207,0.12); color: var(--hh-bat);
+  border: 1.5px solid rgba(155,127,207,0.25);
+}
+.det-species { font-size: 14px; font-weight: 500; color: var(--hh-text); }
+.det-sci { font-size: 12px; color: var(--hh-muted); font-style: italic; }
+.det-time { font-size: 12px; color: var(--hh-muted); white-space: nowrap; }
+.side-col { padding: 24px 0 24px 24px; display: flex; flex-direction: column; gap: 20px; }
+.naturalist-card {
+  background: var(--hh-card);
+  border: 0.5px solid var(--hh-border);
+  border-radius: 12px; padding: 18px;
+}
+.naturalist-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.naturalist-icon {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(90,158,111,0.15);
+  border: 0.5px solid rgba(90,158,111,0.3);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.naturalist-title { font-size: 12px; color: var(--hh-green); font-weight: 500; letter-spacing: 0.3px; }
+.naturalist-body {
+  font-family: var(--font-serif);
+  font-size: 14px; line-height: 1.75;
+  color: var(--hh-text-dim); font-style: italic;
+}
+.naturalist-body strong { color: var(--hh-green-pale); font-style: normal; font-weight: 500; }
+.naturalist-footer {
+  margin-top: 12px; font-size: 11px; color: var(--hh-muted);
+  border-top: 0.5px solid var(--hh-border); padding-top: 10px;
+}
+.stats-card {
+  background: var(--hh-card);
+  border: 0.5px solid var(--hh-border);
+  border-radius: 12px; padding: 18px;
+}
+.stat-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 0.5px solid var(--hh-border);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-name { font-size: 13px; color: var(--hh-text-dim); }
+.stat-val { font-size: 14px; font-weight: 500; color: var(--hh-green-pale); }
+.stat-val.bat { color: var(--hh-bat-pale); }
+.species-card {
+  background: var(--hh-card);
+  border: 0.5px solid var(--hh-border);
+  border-radius: 12px; padding: 18px;
+}
+.species-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px;
+  background: rgba(90,158,111,0.08);
+  border: 0.5px solid rgba(90,158,111,0.2);
+  border-radius: 20px; padding: 3px 10px;
+  margin: 3px 3px 3px 0; color: var(--hh-green-pale);
+}
+.species-pill.bat {
+  background: rgba(155,127,207,0.08);
+  border-color: rgba(155,127,207,0.2);
+  color: var(--hh-bat-pale);
+}
+.health-strip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: var(--hh-card);
+  border: 0.5px solid var(--hh-border);
+  border-radius: 8px; font-size: 12px; color: var(--hh-muted);
+}
+.health-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--hh-green-bright); flex-shrink: 0; }
+footer {
+  border-top: 0.5px solid var(--hh-border);
+  padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; color: var(--hh-muted);
+}
+footer a { color: var(--hh-green); text-decoration: none; }
+@media (max-width: 700px) {
+  .layout { grid-template-columns: 1fr; }
+  .main-col { border-right: none; padding: 16px 0; }
+  .side-col { padding: 0; }
+  .header-stats { flex-wrap: wrap; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">heardhere</span>
+  <ul class="nav-links">
+    <li><a href="#" class="active">Live feed</a></li>
+    <li><a href="#week">This week</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <div class="nav-live">
+    <div class="live-dot"></div>
+    live
+  </div>
+</nav>
+
+<header class="site-header">
+  <div class="header-eyebrow">nature listening station</div>
+  <h1 class="site-name" id="site-name">Loading…</h1>
+  <div class="site-meta">
+    <div class="w3w-badge">
+      <span>///</span><span id="w3w">—</span>
+    </div>
+    <div class="header-stats">
+      <div class="hstat">
+        <div class="hstat-val" id="today-birds">—</div>
+        <div class="hstat-label">bird detections today</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val bat" id="today-bats">—</div>
+        <div class="hstat-label">bat passes tonight</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <main class="main-col">
+    <div class="section-label">Recent detections</div>
+    <div class="detection-feed" id="detection-feed">
+      <div style="color:var(--hh-muted);font-size:13px;padding:20px 0;text-align:center">
+        Connecting to station…
+      </div>
+    </div>
+  </main>
+
+  <aside class="side-col">
+    <div class="naturalist-card">
+      <div class="naturalist-header">
+        <div class="naturalist-icon">🌿</div>
+        <span class="naturalist-title">AI Naturalist</span>
+      </div>
+      <p class="naturalist-body" id="naturalist-text">
+        <em>Listening…</em>
+      </p>
+      <div class="naturalist-footer" id="naturalist-footer">—</div>
+    </div>
+
+    <div class="stats-card">
+      <div class="section-label" style="margin-bottom:10px">Today</div>
+      <div class="stat-row">
+        <span class="stat-name">Species recorded</span>
+        <span class="stat-val" id="stat-species">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Top bird</span>
+        <span class="stat-val" id="stat-top-bird">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">First call</span>
+        <span class="stat-val" id="stat-first">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Last bat pass</span>
+        <span class="stat-val bat" id="stat-last-bat">—</span>
+      </div>
+    </div>
+
+    <div class="species-card" id="week">
+      <div class="section-label" style="margin-bottom:12px">This week</div>
+      <div id="week-species">
+        <div style="color:var(--hh-muted);font-size:12px">Loading…</div>
+      </div>
+    </div>
+
+    <div class="health-strip">
+      <div class="health-dot" id="health-dot"></div>
+      <span id="health-text">Connecting…</span>
+    </div>
+  </aside>
+</div>
+
+<footer id="about">
+  <span>
+    <a href="https://heardhere.uk">heardhere.uk</a> — every place has a voice
+  </span>
+  <span id="footer-updated">—</span>
+</footer>
+
+<script>
+const UNIT_ID = "nw-001";
+const API_BASE = "https://api.heardhere.uk";
+
+function fmt(isoStr) {
+  if (!isoStr) return "—";
+  try {
+    const d = new Date(isoStr);
+    const diffMins = Math.floor((Date.now() - d) / 60000);
+    if (diffMins < 1) return "just now";
+    if (diffMins < 60) return diffMins + "m ago";
+    if (diffMins < 1440) return Math.floor(diffMins / 60) + "h ago";
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  } catch { return "—"; }
+}
+
+function confPct(c) { return Math.round((c || 0) * 100) + "%"; }
+
+function renderDetection(d) {
+  const isBat = d.type === "bat";
+  return `<div class="detection-row">
+    <div class="conf-ring ${isBat ? 'bat' : 'bird'}">${confPct(d.confidence)}</div>
+    <div>
+      <div class="det-species">${d.species}</div>
+      ${d.scientific ? `<div class="det-sci">${d.scientific}</div>` : ''}
+    </div>
+    <div class="det-time">${fmt(d.detected_at)}</div>
+  </div>`;
+}
+
+function renderWeekSpecies(species) {
+  if (!species || !species.length) return '<span style="color:var(--hh-muted);font-size:12px">No data yet</span>';
+  return species.map(s =>
+    `<span class="species-pill ${s.type === 'bat' ? 'bat' : ''}">${s.species} <span style="opacity:0.6">${s.detections}</span></span>`
+  ).join('');
+}
+
+function renderDemo() {
+  document.getElementById("site-name").textContent = "Demo Station";
+  document.getElementById("w3w").textContent = "lake.fell.stone";
+  document.getElementById("today-birds").textContent = "47";
+  document.getElementById("today-bats").textContent = "12";
+  document.getElementById("stat-species").textContent = "11";
+  document.getElementById("stat-top-bird").textContent = "Robin";
+  document.getElementById("stat-first").textContent = "4h ago";
+  document.getElementById("stat-last-bat").textContent = "3h ago";
+  document.getElementById("health-dot").style.background = "var(--hh-amber)";
+  document.getElementById("health-text").textContent = "Demo mode — connect a unit to see live data";
+  document.getElementById("footer-updated").textContent = "Demo data";
+
+  const demo = [
+    {type:"bird",species:"European Robin",scientific:"Erithacus rubecula",confidence:0.97,detected_at:new Date(Date.now()-3*60000).toISOString()},
+    {type:"bird",species:"Common Chaffinch",scientific:"Fringilla coelebs",confidence:0.91,detected_at:new Date(Date.now()-11*60000).toISOString()},
+    {type:"bat",species:"Common Pipistrelle",scientific:"Pipistrellus pipistrellus",confidence:0.88,detected_at:new Date(Date.now()-22*60000).toISOString()},
+    {type:"bird",species:"Song Thrush",scientific:"Turdus philomelos",confidence:0.85,detected_at:new Date(Date.now()-34*60000).toISOString()},
+    {type:"bird",species:"Great Tit",scientific:"Parus major",confidence:0.94,detected_at:new Date(Date.now()-45*60000).toISOString()},
+    {type:"bat",species:"Soprano Pipistrelle",scientific:"Pipistrellus pygmaeus",confidence:0.76,detected_at:new Date(Date.now()-58*60000).toISOString()},
+    {type:"bird",species:"Blackbird",scientific:"Turdus merula",confidence:0.99,detected_at:new Date(Date.now()-72*60000).toISOString()},
+    {type:"bird",species:"Wren",scientific:"Troglodytes troglodytes",confidence:0.82,detected_at:new Date(Date.now()-88*60000).toISOString()},
+  ];
+
+  document.getElementById("detection-feed").innerHTML = demo.map(renderDetection).join("");
+  document.getElementById("week-species").innerHTML = renderWeekSpecies([
+    {species:"Blackbird",detections:43,type:"bird"},
+    {species:"Robin",detections:38,type:"bird"},
+    {species:"Common Pipistrelle",detections:29,type:"bat"},
+    {species:"Great Tit",detections:24,type:"bird"},
+    {species:"Chaffinch",detections:19,type:"bird"},
+    {species:"Soprano Pipistrelle",detections:11,type:"bat"},
+    {species:"Wren",detections:9,type:"bird"},
+  ]);
+  document.getElementById("naturalist-text").innerHTML =
+    `A <strong>Robin</strong> opened this morning's chorus at 04:23 — one of 11 species heard since dawn. Tonight's bat activity includes a <strong>Common Pipistrelle</strong> working the hedgerow edge. A good sign for insect abundance.`;
+  document.getElementById("naturalist-footer").textContent =
+    "Dawn summary · " + new Date().toLocaleDateString("en-GB", {weekday:"long",day:"numeric",month:"long"});
+}
+
+async function loadUnit() {
+  try {
+    const [summaryRes, birdsRes, batsRes] = await Promise.all([
+      fetch(`${API_BASE}/api/unit/${UNIT_ID}/summary`),
+      fetch(`${API_BASE}/api/unit/${UNIT_ID}/birds?limit=20`),
+      fetch(`${API_BASE}/api/unit/${UNIT_ID}/bats?limit=10`),
+    ]);
+    if (!summaryRes.ok) throw new Error("API error");
+
+    const summary = await summaryRes.json();
+    const birds = birdsRes.ok ? await birdsRes.json() : {detections:[]};
+    const bats = batsRes.ok ? await batsRes.json() : {detections:[]};
+
+    document.getElementById("site-name").textContent = summary.site_name || "heardhere station";
+    document.getElementById("w3w").textContent = summary.w3w || "—";
+    document.getElementById("today-birds").textContent = summary.today?.birds ?? 0;
+    document.getElementById("today-bats").textContent = summary.today?.bats ?? 0;
+
+    const all = [
+      ...(birds.detections||[]).map(d=>({...d,type:"bird"})),
+      ...(bats.detections||[]).map(d=>({...d,type:"bat"})),
+    ].sort((a,b)=>new Date(b.detected_at)-new Date(a.detected_at)).slice(0,25);
+
+    document.getElementById("detection-feed").innerHTML = all.length
+      ? all.map(renderDetection).join("")
+      : '<div style="color:var(--hh-muted);font-size:13px;padding:20px 0;text-align:center">No detections yet today</div>';
+
+    document.getElementById("stat-species").textContent =
+      (birds.today?.species_seen?.length||0) + (bats.today?.species_seen?.length||0);
+    document.getElementById("stat-top-bird").textContent = birds.this_week?.[0]?.species || "—";
+    document.getElementById("stat-first").textContent =
+      birds.detections?.length ? fmt(birds.detections[birds.detections.length-1]?.detected_at) : "—";
+    document.getElementById("stat-last-bat").textContent =
+      bats.detections?.[0] ? fmt(bats.detections[0].detected_at) : "—";
+
+    const weekSpecies = [
+      ...(birds.this_week||[]).map(s=>({...s,type:"bird"})),
+      ...(bats.this_week||[]).map(s=>({...s,type:"bat"})),
+    ].sort((a,b)=>b.detections-a.detections);
+    document.getElementById("week-species").innerHTML = renderWeekSpecies(weekSpecies);
+
+    document.getElementById("health-dot").style.background = "var(--hh-green-bright)";
+    document.getElementById("health-text").textContent = "Unit online · updated " + fmt(new Date().toISOString());
+    document.getElementById("footer-updated").textContent = "Updated " + new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+
+  } catch(e) {
+    renderDemo();
+  }
+}
+
+loadUnit();
+setInterval(loadUnit, 5 * 60 * 1000);
+</script>
+</body>
+</html>
