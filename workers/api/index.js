@@ -74,7 +74,7 @@ export default {
       case "bats":     return handleDetections(env.DB, unitId, "bat", url);
       case "weather":  return handleWeather(env.DB, unitId);
       case "summary":  return handleSummary(env.DB, unitId, unit);
-      default:         return jsonError(404, `Unknown resource '${resource}'");
+      default:         return jsonError(404, `Unknown resource '${resource}'`);
     }
   },
 };

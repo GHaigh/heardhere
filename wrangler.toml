@@ -1,29 +1,47 @@
-# heardhere.uk — Cloudflare Workers configuration
-# Deploy with: wrangler deploy
-# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
-
 name = "heardhere-ingest"
 main = "workers/ingest/index.js"
 compatibility_date = "2025-01-01"
 
-# D1 database binding
 [[d1_databases]]
 binding = "DB"
 database_name = "heardhere-db"
-database_id = "REPLACE_WITH_YOUR_D1_ID"
+database_id = "de42d97f-fec8-4fc0-b553-20d200fc9931"
 
-# KV namespace for unit API key hashes
 [[kv_namespaces]]
 binding = "UNIT_KEYS"
-id = "REPLACE_WITH_YOUR_KV_ID"
+id = "c5bb84ba508a4917bbc7850fb496e42b"
 
-# R2 bucket for audio clips
+[[kv_namespaces]]
+binding = "ADMIN_KEYS"
+id = "ac5e6c16728c40db9cf6361e411ce05b"
+
 [[r2_buckets]]
 binding = "AUDIO"
 bucket_name = "heardhere-audio"
 
-# Routes — subdomain per worker
 [env.production]
 routes = [
   { pattern = "ingest.heardhere.uk/*", zone_name = "heardhere.uk" }
 ]
+
+[env.api]
+name = "heardhere-api"
+main = "workers/api/index.js"
+routes = [{ pattern = "api.heardhere.uk/*", zone_name = "heardhere.uk" }]
+
+[[env.api.d1_databases]]
+binding = "DB"
+database_name = "heardhere-db"
+database_id = "de42d97f-fec8-4fc0-b553-20d200fc9931"
+
+[[env.api.kv_namespaces]]
+binding = "UNIT_KEYS"
+id = "c5bb84ba508a4917bbc7850fb496e42b"
+
+[[env.api.kv_namespaces]]
+binding = "ADMIN_KEYS"
+id = "ac5e6c16728c40db9cf6361e411ce05b"
+
+[[env.api.r2_buckets]]
+binding = "AUDIO"
+bucket_name = "heardhere-audio"
